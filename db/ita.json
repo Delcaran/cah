@@ -509,9 +509,8 @@
         "Vomitare a denti stretti per sentire i pezzettoni.",
         "Avere peli pubici fra i denti."
     ],
-    "metadata": {
-        "0": {
-            "id": 0,
+    "sets": [
+        {
             "name": "CAH42",
             "official": false,
             "white": [
@@ -814,5 +813,5 @@
                 70
             ]
         }
-    }
+    ]
 }
