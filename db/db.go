@@ -3,7 +3,6 @@ package db
 import (
 	_ "embed"
 	"encoding/json"
-	"fmt"
 )
 
 //go:embed eng.json
@@ -21,17 +20,17 @@ type WhiteCard struct {
 	Text string
 }
 
-type set struct {
+type Set struct {
 	Name string `json:"name"`
 	Official bool `json:"official"`
 	BlackIDs []uint `json:"black"`
 	WhiteIDs []uint `json:"white"`
 }
 
-type database struct {
+type Database struct {
 	Black []BlackCard `json:"black"`
 	White []WhiteCard `json:"white"`
-	Sets  []set `json:"sets"`
+	Sets  []Set `json:"sets"`
 }
 
 type SelectedCards struct {
@@ -39,9 +38,9 @@ type SelectedCards struct {
 	white []WhiteCard
 }
 
-func Load(lang string) {
+func Load(lang string) (*Database, error){
 	var values string
-	data := database{}
+	data := Database{}
 	switch lang {
 	case "ita":
 		values = db_ita
@@ -49,7 +48,5 @@ func Load(lang string) {
 		values = db_eng
 	}
     json.Unmarshal([]byte(values), &data)
-	for set_num, set := range data.Sets {
-		fmt.Printf("set %d name: %s\n", set_num, set.Name)
-	}
+	return &data, nil
 }
