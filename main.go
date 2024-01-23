@@ -1,30 +1,40 @@
 package main
 
 import (
+	"embed"
 	_ "embed"
 
-	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 
 	"github.com/delcaran/cah/db"
+
+	_ "embed"
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
+//go:embed template/*
+var content embed.FS
+
+var templates = template.Must(template.ParseFS(content, "template/*.html"))
+
+func index_handler(w http.ResponseWriter, r *http.Request) {
+    err := templates.ExecuteTemplate(w, "main.html", nil)
+	if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+    }
 }
 
 func db_load(w http.ResponseWriter, r *http.Request) {
     database, _ := db.Load("eng")
-	var content string
-	for set_num, set := range database.Sets {
-		content = fmt.Sprintf("%s<li>[%d] %s</li>\n", content, set_num, set.Name)
-	}
-    fmt.Fprintf(w, "", content)
+	err := templates.ExecuteTemplate(w, "new.html", database)
+	if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+    }
 }
 
 func main() {
-    http.HandleFunc("/", handler)
-	http.HandleFunc("/load", db_load)
+    http.HandleFunc("/", index_handler)
+	http.HandleFunc("/new", db_load)
     log.Fatal(http.ListenAndServe(":8080", nil))
 }
