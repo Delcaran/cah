@@ -2,15 +2,11 @@ package main
 
 import (
 	"embed"
-	_ "embed"
-
 	"html/template"
 	"log"
 	"net/http"
 
 	"github.com/delcaran/cah/db"
-
-	_ "embed"
 )
 
 //go:embed template/*
