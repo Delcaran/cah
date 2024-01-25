@@ -1,8 +1,6 @@
 <h1>Select Gaming Sets</h1>
 <div>
     <form action="/select_sets/" method="POST">
-        <label for="name">Your Name: </label>
-        <input type="text" name="name"><br>
         <input type="submit" value="NEW GAME"><br>
         {{ range $index, $element := .Sets }}
             <input type="checkbox" name="sets" id="set_{{$index}}"value="{{$index}}">

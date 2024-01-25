@@ -3,6 +3,8 @@ package db
 import (
 	_ "embed"
 	"encoding/json"
+	"math/rand"
+	"time"
 )
 
 //go:embed eng.json
@@ -11,36 +13,21 @@ var db_eng string
 //go:embed ita.json
 var db_ita string
 
-type Card interface {
-	Print() string
-	getPick() uint
-}
+var database Database // all my sets
+var avail_blacks []BlackCard
+var avail_whites []WhiteCard
+var used_blacks []BlackCard
+var used_whites []WhiteCard
+var randomizer *rand.Rand
 
 type BlackCard struct {
 	Text string `json:"text"`
 	Pick uint   `json:"pick"`
 }
 
-func (c BlackCard) Print() string {
-	return c.Text
-}
-func (c BlackCard) getPick() uint {
-	return c.Pick
-}
-
-
 type WhiteCard struct {
 	Text string
 }
-
-func (c WhiteCard) Print() string {
-	return c.Text
-}
-func (c WhiteCard) getPick() uint {
-	return 0
-}
-
-var database Database
 
 type Set struct {
 	Name string `json:"name"`
@@ -55,12 +42,8 @@ type Database struct {
 	Sets  []Set `json:"sets"`
 }
 
-type SelectedCards struct {
-	black []Card
-	white []Card
-}
-
 func Load(lang string) (*Database, error) {
+	randomizer = rand.New(rand.NewSource(time.Now().UnixNano()))
 	var values string
 	switch lang {
 	case "ita":
@@ -89,7 +72,7 @@ func cleanup_card_list(cards []uint) []uint {
 	return cleaned
 }
 
-func GetSelectedCards(sets []int) (SelectedCards, error) {
+func SelectCards(sets []int) {
 	var wanted_blacks []uint
 	var wanted_whites []uint
 	for index, set := range database.Sets {
@@ -103,13 +86,47 @@ func GetSelectedCards(sets []int) (SelectedCards, error) {
 	wanted_blacks = cleanup_card_list(wanted_blacks)
 	wanted_whites = cleanup_card_list(wanted_whites)
 
-	var selection SelectedCards
 	for _, id := range wanted_blacks {
-		selection.black = append(selection.black, database.Black[id])
+		avail_blacks = append(avail_blacks, database.Black[id])
 	}
 	for _, id := range wanted_whites {
-		selection.white = append(selection.black, database.White[id])
+		avail_whites = append(avail_whites, database.White[id])
 	}
+	avail_blacks = shuffle[BlackCard](avail_blacks)
+	avail_whites = shuffle[WhiteCard](avail_whites)
+}
 
-	return selection, nil
+func shuffle[C BlackCard|WhiteCard](deck []C) []C {
+	dest := make([]C, len(deck))
+	perm := rand.Perm(len(deck))
+	for i, v := range perm {
+		dest[v] = deck[i]
+	}
+	return dest
+}
+
+func getCard[C BlackCard|WhiteCard](deck []C, used_deck []C) (C, []C, []C) {
+	var extracted C
+	card_num := len(deck)
+	if card_num <= 0 {
+		deck = append(deck, used_deck...)
+		used_deck = nil
+	}
+	index := randomizer.Intn(card_num)
+	extracted = deck[index]
+	deck = append(deck[:index], deck[index:]...)
+	used_deck = append(used_deck, extracted)
+	return extracted, deck, used_deck
+}
+
+func GetBlackCard() BlackCard {
+	var extracted BlackCard
+	extracted, avail_blacks, used_blacks = getCard[BlackCard](avail_blacks, used_blacks)
+	return extracted
+}
+
+func GetWhiteCard() WhiteCard {
+	var extracted WhiteCard
+	extracted, avail_whites, used_whites = getCard[WhiteCard](avail_whites, used_whites)
+	return extracted
 }
