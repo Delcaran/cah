@@ -12,24 +12,22 @@ import (
 	"github.com/delcaran/cah/db"
 )
 
-type player struct {
-	id uint
-	name string
-	score uint
-	white_cards []db.WhiteCard
+type Player struct {
+	ID    uint
+	Czar  bool
+	Name  string
+	Score uint
+	Cards []db.WhiteCard
 }
 
 type status struct {
-	players []player
+	players []Player
 }
 
-type page_content struct {
-	player_num uint
-	game_status *status
-	czar bool
-	black_card db.BlackCard
+type PageContent struct {
+	CurrPlayer *Player
+	Black_Card db.BlackCard
 }
-
 
 //go:embed template/*
 var content embed.FS
@@ -63,12 +61,11 @@ func websocket_test(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "websocket_test.html", "ws://"+r.Host+"/echo")
 }
 
-
 func index_handler(w http.ResponseWriter, r *http.Request) {
-    err := templates.ExecuteTemplate(w, "main.html", nil)
+	err := templates.ExecuteTemplate(w, "main.html", nil)
 	if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-    }
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func new_game_handler(w http.ResponseWriter, r *http.Request) {
@@ -87,7 +84,7 @@ func card_selection_handler(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("ParseForm() err: %v", err)
 		return
 	}
-    selected_sets_str := r.Form["sets"] // array of strings
+	selected_sets_str := r.Form["sets"] // array of strings
 	var selected_sets []int
 	var err error
 	for _, s := range selected_sets_str {
@@ -99,28 +96,26 @@ func card_selection_handler(w http.ResponseWriter, r *http.Request) {
 	}
 	db.SelectCards(selected_sets)
 	// card selected, go to play
-	first_player := player{id:0, score:0, name:""}
-	for i:=0; i<10; i++ {
-		first_player.white_cards = append(first_player.white_cards, db.GetWhiteCard())
+	first_player := Player{ID: 0, Score: 0, Name: r.FormValue("name"), Czar: true}
+	for i := 0; i < 10; i++ {
+		first_player.Cards = append(first_player.Cards, db.GetWhiteCard())
 	}
-	game_status.players = append(game_status.players, )
-	var pc page_content
-	pc.game_status = &game_status
-	pc.player_num = 0
-	pc.czar = true
-	pc.black_card = db.GetBlackCard()
+	game_status.players = append(game_status.players, first_player)
+	var pc PageContent
+	pc.CurrPlayer = &game_status.players[0]
+	pc.Black_Card = db.GetBlackCard()
 	err = templates.ExecuteTemplate(w, "play.html", pc)
 	if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-    }
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func main() {
-	game_status = status{players: make([]player, 0)}
-    http.HandleFunc("/", index_handler)
+	game_status = status{players: make([]Player, 0)}
+	http.HandleFunc("/", index_handler)
 	http.HandleFunc("/new/", new_game_handler)
 	http.HandleFunc("/select_sets/", card_selection_handler)
 	http.HandleFunc("/echo", echo)
 	http.HandleFunc("/test", websocket_test)
-    log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }

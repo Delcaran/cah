@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html>
 
+<style>
+  #black_card {
+    background-color: black;
+    color: white;
+  }
+</style>
+
 <head>
     <meta charset="utf-8">
     <script>
@@ -38,7 +45,7 @@
                 return false;
             };
 
-            document.getElementById("send").onclick = function (evt) {
+            document.getElementById("play").onclick = function (evt) {
                 if (!ws) {
                     return false;
                 }
@@ -60,32 +67,27 @@
 </head>
 
 <body>
-    {{if .czar /* czar, the black card player}}
-    <div>CZAR!!!</div>
-    {{else /* normal white card player */}}
-    <table>
-        <tr>
-            <td valign="top" width="50%">
-                <p>
-                    <ol>
-                        <li>Insert your name</li>
-                        <li>Press "Play" to receive your cards</li>
-                        <li>Presse "Send" to send selected card(s)</li>
-                    </ol>
-                <p>
-                <form>
-                    <button id="open">Open</button>
-                    <button id="close">Close</button>
-                    <p><input id="input" type="text" value="Hello world!">
-                        <button id="send">Send</button>
-                </form>
-            </td>
-            <td valign="top" width="50%">
-                <div id="output" style="max-height: 70vh;overflow-y: scroll;"></div>
-            </td>
-        </tr>
-    </table>
-    {{end}}
+    <form>
+        <div id="begin_controls">
+            <button id="play">Play</button>
+        </div>
+        <div id="black_card">{{.Black_Card.Text}}</div>
+        <fieldset>
+            <legend>Select the best answer</legend>
+            <div id="white_cards">
+            {{if .CurrPlayer.Czar }}
+                <!-- other players white cards suggestions as they arrive -->
+                <!-- radio button only -->
+            {{else}}
+                <!-- your white cards to submit -->
+                <!-- radio or checkbox, it depends on pick -->
+            {{end}}
+            </div>
+        </fieldset>
+        <div id="send_controls">
+            <button id="send">Send</button>
+        </div>
+    </form>
 </body>
 
 </html>
