@@ -1,4 +1,4 @@
-package main
+package game
 
 import (
 	"log"
@@ -12,19 +12,15 @@ type Player struct {
 	Czar  bool
 	Name  string
 	Score uint
-	Cards []db.WhiteCard
+	Cards []*db.WhiteCard
 }
 
 type Status struct {
-	players []Player
+	Players    []Player
+	Black_Card *db.BlackCard
 }
 
-type PageContent struct {
-	CurrPlayer *Player
-	Black_Card db.BlackCard
-}
-
-var game_status Status
+var game_status = Status{Players: make([]Player, 0)}
 
 func loadDatabase(language string) *db.Database {
 	allowed_langs := []string{"eng", "ita"}
@@ -41,7 +37,8 @@ func loadDatabase(language string) *db.Database {
 	return nil
 }
 
-func initGame(selected_sets_str []string, first_czar string) PageContent {
+// Load the cards, setup first player and first black card
+func Init(selected_sets_str []string, first_czar string) {
 	var selected_sets []int
 	for _, s := range selected_sets_str {
 		v, err := strconv.Atoi(s)
@@ -51,18 +48,23 @@ func initGame(selected_sets_str []string, first_czar string) PageContent {
 		selected_sets = append(selected_sets, v)
 	}
 	db.SelectCards(selected_sets)
-	// card selected, go to play
 	first_player := Player{ID: 0, Score: 0, Name: first_czar, Czar: true}
 	for i := 0; i < 10; i++ {
 		first_player.Cards = append(first_player.Cards, db.GetWhiteCard())
 	}
-	game_status.players = append(game_status.players, first_player)
-	var pc PageContent
-	pc.CurrPlayer = &game_status.players[0]
-	pc.Black_Card = db.GetBlackCard()
-	return pc
+	game_status.Players = append(game_status.Players, first_player)
+	game_status.Black_Card = db.GetBlackCard()
 }
 
-func newGame() *Status {
-	return &Status{players: make([]Player, 0)}
+// a new player enters the game
+func Join(playername string) {
+	new_player := Player{ID: uint(len(game_status.Players)), Score: 0, Name: playername, Czar: true}
+	for i := 0; i < 10; i++ {
+		new_player.Cards = append(new_player.Cards, db.GetWhiteCard())
+	}
+	game_status.Players = append(game_status.Players, new_player)
+}
+
+func GetGame() *Status {
+	return &game_status
 }

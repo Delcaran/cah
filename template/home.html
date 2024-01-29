@@ -86,13 +86,42 @@ body {
     overflow: hidden;
 }
 
+#black_card {
+    background-color: black;
+    color: white;
+}
+
 </style>
 </head>
 <body>
-<div id="log"></div>
 <form id="form">
+    {{if .CurrentPlayer == nil}}
+        <!-- czar player name -->
+        <input type="text" id="player_name" size="64" autofocus />
+        {{if .CurrentBlackCard == nil}}
+            <!-- set selection -->
+            {{ range $index, $element := .Sets }}
+                <input type="checkbox" name="sets" id="set_{{$index}}"value="{{$index}}">
+                <label for="set_{{$index}}">{{$element.Name}}</label>
+                <br>
+            {{end}}
+        {{end}}
+    {{else}}
+    <div id="black_card">{{.CurrentBlackCard.Text}}</div>
+    <fieldset>
+        <legend>Select the best answer</legend>
+        <div id="white_cards">
+        {{if .CurrentPlayer.Czar }}
+            <!-- other players white cards suggestions as they arrive -->
+            <div id="log"></div>
+        {{else}}
+            <!-- your white cards to submit -->
+            <!-- radio or checkbox, it depends on pick -->
+        {{end}}
+        </div>
+    </fieldset>
+    {{end}}
     <input type="submit" value="Send" />
-    <input type="text" id="msg" size="64" autofocus />
 </form>
 </body>
 </html>

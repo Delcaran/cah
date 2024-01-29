@@ -14,10 +14,10 @@ var db_eng string
 var db_ita string
 
 var database Database // all my sets
-var avail_blacks []BlackCard
-var avail_whites []WhiteCard
-var used_blacks []BlackCard
-var used_whites []WhiteCard
+var avail_blacks []*BlackCard
+var avail_whites []*WhiteCard
+var used_blacks []*BlackCard
+var used_whites []*WhiteCard
 var randomizer *rand.Rand
 
 type BlackCard struct {
@@ -30,8 +30,8 @@ type WhiteCard struct {
 }
 
 type Set struct {
-	Name string `json:"name"`
-	Official bool `json:"official"`
+	Name     string `json:"name"`
+	Official bool   `json:"official"`
 	BlackIDs []uint `json:"black"`
 	WhiteIDs []uint `json:"white"`
 }
@@ -39,7 +39,7 @@ type Set struct {
 type Database struct {
 	Black []BlackCard `json:"black"`
 	White []WhiteCard `json:"white"`
-	Sets  []Set `json:"sets"`
+	Sets  []Set       `json:"sets"`
 }
 
 func Load(lang string) (*Database, error) {
@@ -51,7 +51,7 @@ func Load(lang string) (*Database, error) {
 	case "eng":
 		values = db_eng
 	}
-    json.Unmarshal([]byte(values), &database)
+	json.Unmarshal([]byte(values), &database)
 	return &database, nil
 }
 
@@ -87,17 +87,17 @@ func SelectCards(sets []int) {
 	wanted_whites = cleanup_card_list(wanted_whites)
 
 	for _, id := range wanted_blacks {
-		avail_blacks = append(avail_blacks, database.Black[id])
+		avail_blacks = append(avail_blacks, &database.Black[id])
 	}
 	for _, id := range wanted_whites {
-		avail_whites = append(avail_whites, database.White[id])
+		avail_whites = append(avail_whites, &database.White[id])
 	}
 	avail_blacks = shuffle[BlackCard](avail_blacks)
 	avail_whites = shuffle[WhiteCard](avail_whites)
 }
 
-func shuffle[C BlackCard|WhiteCard](deck []C) []C {
-	dest := make([]C, len(deck))
+func shuffle[C BlackCard | WhiteCard](deck []*C) []*C {
+	dest := make([]*C, len(deck))
 	perm := rand.Perm(len(deck))
 	for i, v := range perm {
 		dest[v] = deck[i]
@@ -105,8 +105,8 @@ func shuffle[C BlackCard|WhiteCard](deck []C) []C {
 	return dest
 }
 
-func getCard[C BlackCard|WhiteCard](deck []C, used_deck []C) (C, []C, []C) {
-	var extracted C
+func getCard[C BlackCard | WhiteCard](deck []*C, used_deck []*C) (*C, []*C, []*C) {
+	var extracted *C
 	card_num := len(deck)
 	if card_num <= 0 {
 		deck = append(deck, used_deck...)
@@ -119,14 +119,14 @@ func getCard[C BlackCard|WhiteCard](deck []C, used_deck []C) (C, []C, []C) {
 	return extracted, deck, used_deck
 }
 
-func GetBlackCard() BlackCard {
-	var extracted BlackCard
+func GetBlackCard() *BlackCard {
+	var extracted *BlackCard
 	extracted, avail_blacks, used_blacks = getCard[BlackCard](avail_blacks, used_blacks)
 	return extracted
 }
 
-func GetWhiteCard() WhiteCard {
-	var extracted WhiteCard
+func GetWhiteCard() *WhiteCard {
+	var extracted *WhiteCard
 	extracted, avail_whites, used_whites = getCard[WhiteCard](avail_whites, used_whites)
 	return extracted
 }
