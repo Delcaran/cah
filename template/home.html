@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>Chat Example</title>
+<title>Cards Against Humanity</title>
 <script type="text/javascript">
 window.onload = function () {
     var conn;
@@ -51,54 +51,20 @@ window.onload = function () {
 };
 </script>
 <style type="text/css">
-html {
-    overflow: hidden;
-}
-
-body {
-    overflow: hidden;
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    background: gray;
-}
-
-#log {
-    background: white;
-    margin: 0;
-    padding: 0.5em 0.5em 0.5em 0.5em;
-    position: absolute;
-    top: 0.5em;
-    left: 0.5em;
-    right: 0.5em;
-    bottom: 3em;
-    overflow: auto;
-}
-
-#form {
-    padding: 0 0.5em 0 0.5em;
-    margin: 0;
-    position: absolute;
-    bottom: 1em;
-    left: 0px;
-    width: 100%;
-    overflow: hidden;
-}
-
 #black_card {
     background-color: black;
     color: white;
 }
-
 </style>
 </head>
 <body>
-<form id="form">
-    {{if .CurrentPlayer == nil}}
+    {{if not .CurrentPlayer}}
+    <form id="setup_form" method="POST">
         <!-- czar player name -->
-        <input type="text" id="player_name" size="64" autofocus />
-        {{if .CurrentBlackCard == nil}}
+        <input type="text" id="player_name" name="player_name" size="64" autofocus />
+        <input type="submit" value="Play" />
+        <br>
+        {{if not .CurrentBlackCard }}
             <!-- set selection -->
             {{ range $index, $element := .Sets }}
                 <input type="checkbox" name="sets" id="set_{{$index}}"value="{{$index}}">
@@ -106,22 +72,24 @@ body {
                 <br>
             {{end}}
         {{end}}
+    </form>
     {{else}}
-    <div id="black_card">{{.CurrentBlackCard.Text}}</div>
-    <fieldset>
-        <legend>Select the best answer</legend>
-        <div id="white_cards">
-        {{if .CurrentPlayer.Czar }}
-            <!-- other players white cards suggestions as they arrive -->
-            <div id="log"></div>
-        {{else}}
-            <!-- your white cards to submit -->
-            <!-- radio or checkbox, it depends on pick -->
-        {{end}}
-        </div>
-    </fieldset>
+    <form id="form">
+        <div id="black_card">{{.CurrentBlackCard.Text}}</div>
+        <fieldset>
+            <legend>Select the best answer</legend>
+            <div id="white_cards">
+            {{if .CurrentPlayer.Czar }}
+                <!-- other players white cards suggestions as they arrive -->
+                <div id="log"></div>
+            {{else}}
+                <!-- your white cards to submit -->
+                <!-- checkbox, pick limited with javascript -->
+            {{end}}
+            </div>
+        </fieldset>
+        <input type="submit" value="Play" />
+    </form>
     {{end}}
-    <input type="submit" value="Send" />
-</form>
 </body>
 </html>

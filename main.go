@@ -19,12 +19,13 @@ import (
 //go:embed template/*
 var content embed.FS
 var templates = template.Must(template.ParseFS(content, "template/*.html"))
-
 var addr = flag.String("addr", ":8080", "http service address")
+var database *db.Database
 
 type PageContent struct {
 	CurrentPlayer    *game.Player
 	CurrentBlackCard *db.BlackCard
+	Sets             *[]db.Set
 }
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
@@ -33,32 +34,31 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 	game_status := game.GetGame()
 	pc := PageContent{}
+	r.ParseForm()
 	if len(game_status.Players) > 0 {
 		// game runnning
-		//TODO fill game info (player ID or name where?)
-	} else {
-		// new game
-		r.ParseForm()
-		if r.PostForm.Has("sets") {
-			// match can begin
-			game.Init(r.Form["sets"], r.FormValue("player_name"))
-			pc.CurrentBlackCard = game_status.Black_Card
-			pc.CurrentPlayer = &game_status.Players[0]
-		} else if r.PostForm.Has("player_name") {
-			// a player is joining
+		if r.PostForm.Has("player_name") {
+			// another player is joining
 			game.Join(r.FormValue("player_name"))
 			pc.CurrentBlackCard = game_status.Black_Card
 			pc.CurrentPlayer = &game_status.Players[len(game_status.Players)-1]
+			//TODO fill game info (player ID or name where?)
+		}
+	} else {
+		// new game
+		if r.PostForm.Has("sets") {
+			// first player is joining
+			game.Init(r.Form["sets"], r.FormValue("player_name"))
+			pc.CurrentBlackCard = game_status.Black_Card
+			pc.CurrentPlayer = &game_status.Players[0]
 		} else {
-			// sets selection and first player name
+			// no player yet, show sets selection
+			database = game.LoadDatabase("eng")
 			pc.CurrentBlackCard = nil
 			pc.CurrentPlayer = nil
+			pc.Sets = &database.Sets
 		}
 	}
 

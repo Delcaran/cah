@@ -22,7 +22,7 @@ type Status struct {
 
 var game_status = Status{Players: make([]Player, 0)}
 
-func loadDatabase(language string) *db.Database {
+func LoadDatabase(language string) *db.Database {
 	allowed_langs := []string{"eng", "ita"}
 	allowed := false
 	for _, x := range allowed_langs {
@@ -58,7 +58,7 @@ func Init(selected_sets_str []string, first_czar string) {
 
 // a new player enters the game
 func Join(playername string) {
-	new_player := Player{ID: uint(len(game_status.Players)), Score: 0, Name: playername, Czar: true}
+	new_player := Player{ID: uint(len(game_status.Players)), Score: 0, Name: playername, Czar: false}
 	for i := 0; i < 10; i++ {
 		new_player.Cards = append(new_player.Cards, db.GetWhiteCard())
 	}
