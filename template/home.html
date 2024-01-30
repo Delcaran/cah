@@ -79,12 +79,16 @@ window.onload = function () {
         <fieldset>
             <legend>Select the best answer</legend>
             <div id="white_cards">
+                <!-- this will be hidden if czar -->
+                {{ range $index, $card := .CurrentPlayer.Cards }}
+                    <input type="checkbox" name="cards" id="card_{{$index}}" value="{{.CurrentPlayer.ID}}_{{$index}}">
+                    <label for="card_{{$index}}">{{$card.Text}}</label>
+                    <br>
+                {{end}}
+            </div>
             {{if .CurrentPlayer.Czar }}
                 <!-- other players white cards suggestions as they arrive -->
                 <div id="log"></div>
-            {{else}}
-                <!-- your white cards to submit -->
-                <!-- checkbox, pick limited with javascript -->
             {{end}}
             </div>
         </fieldset>
