@@ -44,10 +44,7 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 			game.Join(r.FormValue("player_name"))
 			pc.CurrentBlackCard = game_status.Black_Card
 			pc.CurrentPlayer = &game_status.Players[len(game_status.Players)-1]
-			for index, card := range pc.CurrentPlayer.Cards {
-				log.Printf("%d : %s\n", index, card.Text)
-			}
-			//TODO fill game info (player ID or name where?)
+			log.Println(pc.CurrentPlayer.ID)
 		}
 	} else {
 		// new game
@@ -56,6 +53,7 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 			game.Init(r.Form["sets"], r.FormValue("player_name"))
 			pc.CurrentBlackCard = game_status.Black_Card
 			pc.CurrentPlayer = &game_status.Players[0]
+			log.Println(pc.CurrentPlayer.ID)
 		} else {
 			// no player yet, show sets selection
 			database = game.LoadDatabase("eng")

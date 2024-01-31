@@ -12,7 +12,7 @@ type Player struct {
 	Czar  bool
 	Name  string
 	Score uint
-	Cards []*db.WhiteCard
+	Cards []*string
 }
 
 type Status struct {
@@ -58,7 +58,7 @@ func Init(selected_sets_str []string, first_czar string) {
 
 // a new player enters the game
 func Join(playername string) {
-	new_player := Player{ID: uint(len(game_status.Players)), Score: 0, Name: playername, Czar: false, Cards: make([]*db.WhiteCard, 0)}
+	new_player := Player{ID: uint(len(game_status.Players)), Score: 0, Name: playername, Czar: false, Cards: make([]*string, 0)}
 	for i := 0; i < 10; i++ {
 		new_player.Cards = append(new_player.Cards, db.GetWhiteCard())
 	}

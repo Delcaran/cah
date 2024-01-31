@@ -15,18 +15,14 @@ var db_ita string
 
 var database Database // all my sets
 var avail_blacks []*BlackCard
-var avail_whites []*WhiteCard
+var avail_whites []*string
 var used_blacks []*BlackCard
-var used_whites []*WhiteCard
+var used_whites []*string
 var randomizer *rand.Rand
 
 type BlackCard struct {
 	Text string `json:"text"`
 	Pick uint   `json:"pick"`
-}
-
-type WhiteCard struct {
-	Text string
 }
 
 type Set struct {
@@ -38,7 +34,7 @@ type Set struct {
 
 type Database struct {
 	Black []BlackCard `json:"black"`
-	White []WhiteCard `json:"white"`
+	White []string    `json:"white"`
 	Sets  []Set       `json:"sets"`
 }
 
@@ -93,10 +89,10 @@ func SelectCards(sets []int) {
 		avail_whites = append(avail_whites, &database.White[id])
 	}
 	avail_blacks = shuffle[BlackCard](avail_blacks)
-	avail_whites = shuffle[WhiteCard](avail_whites)
+	avail_whites = shuffle[string](avail_whites)
 }
 
-func shuffle[C BlackCard | WhiteCard](deck []*C) []*C {
+func shuffle[C BlackCard | string](deck []*C) []*C {
 	dest := make([]*C, len(deck))
 	perm := rand.Perm(len(deck))
 	for i, v := range perm {
@@ -105,7 +101,7 @@ func shuffle[C BlackCard | WhiteCard](deck []*C) []*C {
 	return dest
 }
 
-func getCard[C BlackCard | WhiteCard](deck []*C, used_deck []*C) (*C, []*C, []*C) {
+func getCard[C BlackCard | string](deck []*C, used_deck []*C) (*C, []*C, []*C) {
 	var extracted *C
 	card_num := len(deck)
 	if card_num <= 0 {
@@ -125,8 +121,8 @@ func GetBlackCard() *BlackCard {
 	return extracted
 }
 
-func GetWhiteCard() *WhiteCard {
-	var extracted *WhiteCard
-	extracted, avail_whites, used_whites = getCard[WhiteCard](avail_whites, used_whites)
+func GetWhiteCard() *string {
+	var extracted *string
+	extracted, avail_whites, used_whites = getCard[string](avail_whites, used_whites)
 	return extracted
 }
