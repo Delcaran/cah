@@ -7,6 +7,13 @@ function showLang(element)
     document.querySelector('#' + element.value).style.display = "block";
 }
 
+function onCheckBoxChange()
+{
+    var checked = document.querySelectorAll('input[type=checkbox]:checked').lenght;
+    var min = document.getElementById('min_checked').value;
+    document.getElementById("submit").disabled = checked < min;
+}
+
 window.onload = function () {
     var conn;
     var log = document.getElementById("log");
@@ -64,6 +71,7 @@ window.onload = function () {
                 appendLog(msg);
                 const obj = JSON.parse(evt.data);
                 var chk = document.createElement("input");
+                chk.required = true;
                 chk.type = "radio";
                 chk.name = "players";
                 chk.id = "player_" + obj.player_id;
