@@ -1,97 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<title>Cards Against Humanity</title>
-<script type="text/javascript">
-window.onload = function () {
-    var conn;
-    var msg = document.getElementById("msg");
-    var log = document.getElementById("log");
-
-    function appendLog(item) {
-        var doScroll = log.scrollTop > log.scrollHeight - log.clientHeight - 1;
-        log.appendChild(item);
-        if (doScroll) {
-            log.scrollTop = log.scrollHeight - log.clientHeight;
-        }
-    }
-
-    document.getElementById("form").onsubmit = function () {
-        if (!conn) {
-            return false;
-        }
-        if (!msg.value) {
-            return false;
-        }
-        conn.send(msg.value);
-        msg.value = "";
-        return false;
-    };
-
-    if (window["WebSocket"]) {
-        conn = new WebSocket("ws://" + document.location.host + "/ws");
-        conn.onclose = function (evt) {
-            var item = document.createElement("div");
-            item.innerHTML = "<b>Connection closed.</b>";
-            appendLog(item);
-        };
-        conn.onmessage = function (evt) {
-            var messages = evt.data.split('\n');
-            for (var i = 0; i < messages.length; i++) {
-                var item = document.createElement("div");
-                item.innerText = messages[i];
-                appendLog(item);
-            }
-        };
-    } else {
-        var item = document.createElement("div");
-        item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
-        appendLog(item);
-    }
-};
-</script>
-<style type="text/css">
-#black_card {
-    background-color: black;
-    color: white;
-}
-</style>
-</head>
-<body>
-    {{if not .CurrentPlayer}}
-    <form id="setup_form" method="POST">
-        <!-- czar player name -->
-        <input type="text" id="player_name" name="player_name" size="64" autofocus />
-        <input type="submit" value="Play" />
-        <br>
-        {{if not .CurrentBlackCard }}
-            <!-- set selection -->
-            {{ range $index, $element := .Sets }}
-                <input type="checkbox" name="sets" id="set_{{$index}}" value="{{$index}}">
-                <label for="set_{{$index}}">{{$element.Name}}</label>
+    <head>
+        <title>Cards Against Humanity</title>
+        <script type="text/javascript" src="/static/script.js"></script>
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+    <body>
+        <div id=log></div>
+        {{if not .CurrentPlayer}}
+            <form id="setup_form" method="POST">
+                <!-- czar player name -->
+                <input type="text" id="player_name" name="player_name" size="64" placeholder="Enter your name to play" autofocus />
+                <input type="submit" value="Play" />
                 <br>
-            {{end}}
-        {{end}}
-    </form>
-    {{else}}
-    <div>
-        {{if .CurrentPlayer.Czar }}CZAR {{end}}{{.CurrentPlayer.Name}}
-        <!-- other players white cards suggestions as they arrive -->
-        <div id="log" {{if not .CurrentPlayer.Czar}}hidden{{end}}></div>
-    </div>
-    <form id="form">
-        <div id="black_card">{{.CurrentBlackCard.Text}}</div>
-        <div id="white_cards" {{if .CurrentPlayer.Czar}}hidden{{end}}>
-            <!-- this will be hidden if czar -->
+                {{if not .CurrentBlackCard }}
+                    <!-- set selection -->
+                    {{ range $index, $element := .Sets }}
+                        <input type="checkbox" name="sets" id="set_{{$index}}" value="{{$index}}">
+                        <label for="set_{{$index}}">{{$element.Name}}</label>
+                        <br>
+                    {{end}}
+                {{end}}
+            </form>
+        {{else}}
             {{$player_id := .CurrentPlayer.ID}}
-            {{range $index, $card := .CurrentPlayer.Cards}}
-                <input type="checkbox" name="cards" id="card_{{$index}}" value="{{$player_id}}_{{$index}}" />
-                <label for="card_{{$index}}">{{$card}}</label>
-                <br>
-            {{end}}
-        </div>
-        <input type="submit" value="Play" />
-    </form>
-    {{end}}
-</body>
+            <input hidden type="number" id="player_id" name="player_id" value="{{$player_id}}" />
+            <input hidden type="checkbox" id="czar" name="czar" value="1" {{if .CurrentPlayer.Czar }}checked{{end}}/>
+            <div>
+                {{if .CurrentPlayer.Czar }}CZAR {{end}}{{.CurrentPlayer.Name}}
+            </div>
+            <div id="black_card">{{.CurrentBlackCard.Text}}</div>
+            <form id="form">
+                {{if .CurrentPlayer.Czar}}
+                    <div id="white_cards"></div>
+                    <input type="submit" value="Select winning card" />
+                {{else}}
+                    <div id="white_cards">
+                        {{range $index, $card := .CurrentPlayer.Cards}}
+                            <!-- TODO: work with black cards with more selections -->
+                            <input type="radio" name="cards" id="card_{{$index}}" value="{{$index}}" />
+                            <label id="lbl_{{$index}}" for="card_{{$index}}">{{$card}}</label>
+                            <br>
+                        {{end}}
+                        <input type="submit" value="Select cards to play" />
+                    </div>
+                {{end}}
+            </form>
+        {{end}}
+    </body>
 </html>

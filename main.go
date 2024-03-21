@@ -18,6 +18,10 @@ import (
 
 //go:embed template/*
 var content embed.FS
+
+//go:embed static/*
+var static embed.FS
+
 var templates = template.Must(template.ParseFS(content, "template/*.html"))
 var addr = flag.String("addr", ":8080", "http service address")
 var database *db.Database
@@ -44,7 +48,7 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 			game.Join(r.FormValue("player_name"))
 			pc.CurrentBlackCard = game_status.Black_Card
 			pc.CurrentPlayer = &game_status.Players[len(game_status.Players)-1]
-			log.Println(pc.CurrentPlayer.ID)
+			log.Printf("Player %d : %s \n", pc.CurrentPlayer.ID, pc.CurrentPlayer.Name)
 		}
 	} else {
 		// new game
@@ -53,7 +57,7 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 			game.Init(r.Form["sets"], r.FormValue("player_name"))
 			pc.CurrentBlackCard = game_status.Black_Card
 			pc.CurrentPlayer = &game_status.Players[0]
-			log.Println(pc.CurrentPlayer.ID)
+			log.Printf("CZAR %d : %s \n", pc.CurrentPlayer.ID, pc.CurrentPlayer.Name)
 		} else {
 			// no player yet, show sets selection
 			database = game.LoadDatabase("eng")
@@ -74,6 +78,7 @@ func main() {
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
+	http.Handle("/static/", http.FileServerFS(static))
 	server := &http.Server{
 		Addr:              *addr,
 		ReadHeaderTimeout: 3 * time.Second,
