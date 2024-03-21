@@ -13,13 +13,21 @@
                 <input type="text" id="player_name" name="player_name" size="64" placeholder="Enter your name to play" autofocus />
                 <input type="submit" value="Play" />
                 <br>
-                {{if not .CurrentBlackCard }}
-                    <!-- set selection -->
-                    {{ range $index, $element := .Sets }}
-                        <input type="checkbox" name="sets" id="set_{{$index}}" value="{{$index}}">
-                        <label for="set_{{$index}}">{{$element.Name}}</label>
+                <!-- set selection -->
+                <select name="lang" id="lang" onchange="showLang(this)">
+                    <option value="-">---</option>
+                    {{ range $lang, $data := .Sets }}
+                        <option value="{{$lang}}">{{$lang}}</option>
+                    {{end}}
+                </select>
+                {{ range $lang, $data := .Sets }}
+                <div id="{{$lang}}" class="lang_sets" style="display: none">
+                    {{ range $index, $element := $data }}
+                        <input type="checkbox" name="sets" id="set_{{$lang}}_{{$index}}" value="{{$index}}">
+                        <label for="set_{{$lang}}_{{$index}}">{{$element.Name}}</label>
                         <br>
                     {{end}}
+                </div>
                 {{end}}
             </form>
         {{else}}

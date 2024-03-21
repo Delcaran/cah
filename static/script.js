@@ -1,3 +1,12 @@
+function showLang(element)
+{
+    var lang_divs = document.querySelectorAll('div.lang_sets');
+    for (var i = 0; i < lang_divs.length; i++) {
+        lang_divs[i].style.display = "none";
+    }
+    document.querySelector('#' + element.value).style.display = "block";
+}
+
 window.onload = function () {
     var conn;
     var log = document.getElementById("log");

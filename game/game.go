@@ -22,23 +22,14 @@ type Status struct {
 
 var game_status = Status{Players: make([]Player, 0)}
 
-func LoadDatabase(language string) *db.Database {
-	allowed_langs := []string{"eng", "ita"}
-	allowed := false
-	for _, x := range allowed_langs {
-		if x == language {
-			allowed = true
-		}
-	}
-	if allowed {
-		database, _ := db.Load(language)
-		return database
-	}
-	return nil
+func Load() *map[string]*db.Database {
+	dbs, _ := db.Load()
+	return dbs
 }
 
 // Load the cards, setup first player and first black card
-func Init(selected_sets_str []string, first_czar string) {
+func Init(lang string, selected_sets_str []string, first_czar string) {
+	db.SelectdDB(lang)
 	var selected_sets []int
 	for _, s := range selected_sets_str {
 		v, err := strconv.Atoi(s)

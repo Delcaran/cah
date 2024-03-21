@@ -1,19 +1,19 @@
 package db
 
 import (
-	_ "embed"
+	"embed"
 	"encoding/json"
+	"io/fs"
 	"math/rand"
+	"strings"
 	"time"
 )
 
-//go:embed eng.json
-var db_eng string
+//go:embed all:*.json
+var databases_fs embed.FS
 
-//go:embed ita.json
-var db_ita string
-
-var database Database // all my sets
+var databases map[string]*Database
+var database *Database
 var avail_blacks []*BlackCard
 var avail_whites []*string
 var used_blacks []*BlackCard
@@ -38,17 +38,28 @@ type Database struct {
 	Sets  []Set       `json:"sets"`
 }
 
-func Load(lang string) (*Database, error) {
+func Load() (*map[string]*Database, error) {
 	randomizer = rand.New(rand.NewSource(time.Now().UnixNano()))
-	var values string
-	switch lang {
-	case "ita":
-		values = db_ita
-	case "eng":
-		values = db_eng
-	}
-	json.Unmarshal([]byte(values), &database)
-	return &database, nil
+	databases = make(map[string]*Database)
+	fs.WalkDir(databases_fs, ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() {
+			values, _ := databases_fs.ReadFile(path)
+			name := strings.Split(path, ".")[0]
+			var tmp Database
+			json.Unmarshal([]byte(values), &tmp)
+			databases[name] = &tmp
+		}
+		return nil
+	})
+
+	return &databases, nil
+}
+
+func SelectdDB(lang string) {
+	database = databases[lang]
 }
 
 func cleanup_card_list(cards []uint) []uint {
@@ -69,6 +80,8 @@ func cleanup_card_list(cards []uint) []uint {
 }
 
 func SelectCards(sets []int) {
+	avail_blacks = make([]*BlackCard, 0)
+	avail_whites = make([]*string, 0)
 	var wanted_blacks []uint
 	var wanted_whites []uint
 	for index, set := range database.Sets {
@@ -79,8 +92,10 @@ func SelectCards(sets []int) {
 			}
 		}
 	}
-	wanted_blacks = cleanup_card_list(wanted_blacks)
-	wanted_whites = cleanup_card_list(wanted_whites)
+	if len(sets) > 1 {
+		wanted_blacks = cleanup_card_list(wanted_blacks)
+		wanted_whites = cleanup_card_list(wanted_whites)
+	}
 
 	for _, id := range wanted_blacks {
 		avail_blacks = append(avail_blacks, &database.Black[id])

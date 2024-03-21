@@ -24,12 +24,11 @@ var static embed.FS
 
 var templates = template.Must(template.ParseFS(content, "template/*.html"))
 var addr = flag.String("addr", ":8080", "http service address")
-var database *db.Database
 
 type PageContent struct {
 	CurrentPlayer    *game.Player
 	CurrentBlackCard *db.BlackCard
-	Sets             *[]db.Set
+	Sets             map[string]*[]db.Set
 }
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
@@ -54,16 +53,19 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 		// new game
 		if r.PostForm.Has("sets") {
 			// first player is joining
-			game.Init(r.Form["sets"], r.FormValue("player_name"))
+			game.Init(r.FormValue("lang"), r.Form["sets"], r.FormValue("player_name"))
 			pc.CurrentBlackCard = game_status.Black_Card
 			pc.CurrentPlayer = &game_status.Players[0]
 			log.Printf("CZAR %d : %s \n", pc.CurrentPlayer.ID, pc.CurrentPlayer.Name)
 		} else {
 			// no player yet, show sets selection
-			database = game.LoadDatabase("eng")
 			pc.CurrentBlackCard = nil
 			pc.CurrentPlayer = nil
-			pc.Sets = &database.Sets
+			pc.Sets = make(map[string]*[]db.Set)
+			dbs := game.Load()
+			for lang, db := range *dbs {
+				pc.Sets[lang] = &db.Sets
+			}
 		}
 	}
 
