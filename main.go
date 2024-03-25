@@ -42,10 +42,10 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	if len(game_status.Players) > 0 {
 		// game runnning
+		pc.CurrentBlackCard = game_status.Black_Card
 		if r.PostForm.Has("player_name") {
 			// another player is joining
 			game.Join(r.FormValue("player_name"))
-			pc.CurrentBlackCard = game_status.Black_Card
 			pc.CurrentPlayer = &game_status.Players[len(game_status.Players)-1]
 			log.Printf("Player %d : %s \n", pc.CurrentPlayer.ID, pc.CurrentPlayer.Name)
 		}

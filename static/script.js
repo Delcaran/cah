@@ -38,17 +38,30 @@ window.onload = function () {
         }
         if (document.getElementById("czar").checked) {
             // send czar response to players
+            var selectedPlayer = document.querySelectorAll('input[name=players]:checked');
+            if (selectedPlayer.length == 1) {
+                // only one winner
+                let msg = {};
+                msg.kind = "winner"
+                msg.payload = selectedPlayer[0].payload
+                // message is already stored in value
+                conn.send(JSON.stringify(msg));
+            }
             return false;
         } else {
+            // hide submit button (will be replaced with another button when Czar decision is received)
+            document.getElementById("submit").style.display = "none";
             // send players selected cards as json to the czar
-            var checkedCards = document.querySelectorAll('input[name=cards]:checked');
-            if (checkedCards.length > 0) {
+            var selectedPlayer = document.querySelectorAll('input[name=cards]:checked');
+            if (selectedPlayer.length > 0) {
                 let msg = {};
-                msg.player_id = document.getElementById("player_id").value;
-                msg.cards = {}
-                for (var i = 0; i < checkedCards.length; i++) {
-                    index = checkedCards[i].value;
-                    msg.cards[index] = document.getElementById("lbl_" + index).innerText;
+                msg.kind = "submission"
+                msg.payload = {}
+                msg.payload.player_id = document.getElementById("player_id").value;
+                msg.payload.cards = {}
+                for (var i = 0; i < selectedPlayer.length; i++) {
+                    index = selectedPlayer[i].value;
+                    msg.payload.cards[index] = document.getElementById("lbl_" + index).innerText;
                 }
                 conn.send(JSON.stringify(msg));
                 logMessage("<b>Wait for Czar selection.</b>")
@@ -64,28 +77,34 @@ window.onload = function () {
         };
 
         conn.onmessage = function (evt) {
-            if (document.getElementById("czar").checked) {
-                // parse players selections
-                msg = document.createElement("div");
-                msg.innerText = evt.data;
-                appendLog(msg);
-                const obj = JSON.parse(evt.data);
-                var chk = document.createElement("input");
-                chk.required = true;
-                chk.type = "radio";
-                chk.name = "players";
-                chk.id = "player_" + obj.player_id;
-                chk.value = obj.player_id;
-                document.getElementById("white_cards").appendChild(chk)
-                for (let card_index in obj.cards) {
-                    var lbl = document.createElement("label")
-                    lbl.htmlFor = chk.id
-                    lbl.innerText = obj.cards[card_index]
-                    document.getElementById("white_cards").appendChild(lbl)
-                }
-            } else {
-                // parse czar selections
-            }
+            logMessage(evt.data)
+            const obj = JSON.parse(evt.data);     
+            switch(obj.kind) {
+                case 'submission':
+                    // parse players selections
+                    var chk = document.createElement("input");
+                    chk.required = true;
+                    chk.type = "radio";
+                    chk.name = "players";
+                    chk.id = "player_" + obj.payload.player_id;
+                    chk.value = obj.payload.player_id;
+                    chk.payload = obj.payload; // (ab)use custom DOM property
+                    document.getElementById("white_cards").appendChild(chk)
+                    for (let card_index in obj.payload.cards) {
+                        var lbl = document.createElement("label")
+                        lbl.id = "lbl_" + obj.payload.player_id + "_" + card_index
+                        lbl.name = "lbl_"+ obj.payload.player_id
+                        lbl.htmlFor = chk.id
+                        lbl.innerText = obj.payload.cards[card_index]
+                        document.getElementById("white_cards").appendChild(lbl)
+                    }
+                    break;
+                case 'winner':
+                    // parse czar selections
+                    break;
+                default:
+                    logMessage("ERROR")
+            }      
         };
 
     } else {

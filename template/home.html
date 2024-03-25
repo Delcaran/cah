@@ -9,27 +9,29 @@
         <div id=log></div>
         {{if not .CurrentPlayer}}
             <form id="setup_form" method="POST">
-                <!-- czar player name -->
+                <!-- player name -->
                 <input hidden id="checked" type="number" />
                 <input hidden id="min_checked" type="number" value="1" />
                 <input required type="text" id="player_name" name="player_name" size="64" placeholder="Enter your name to play" autofocus />
-                <input type="submit" id="submit" value="Play" disabled/>
-                <br>
-                <!-- set selection -->
-                <select required name="lang" id="lang" onchange="showLang(this)">
-                    <option value="">---</option>
+                <input type="submit" id="submit" value="Play" {{if not .CurrentBlackCard}}disabled{{end}}/>
+                {{if not .CurrentBlackCard}}
+                    <br>
+                    <!-- set selection -->
+                    <select required name="lang" id="lang" onchange="showLang(this)">
+                        <option value="">---</option>
+                        {{ range $lang, $data := .Sets }}
+                            <option value="{{$lang}}">{{$lang}}</option>
+                        {{end}}
+                    </select>
                     {{ range $lang, $data := .Sets }}
-                        <option value="{{$lang}}">{{$lang}}</option>
+                    <div id="{{$lang}}" class="lang_sets" style="display: none">
+                        {{ range $index, $element := $data }}
+                            <input type="checkbox" name="sets" id="set_{{$lang}}_{{$index}}" value="{{$index}}" onclick="onCheckBoxChange()">
+                            <label for="set_{{$lang}}_{{$index}}">{{$element.Name}}</label>
+                            <br>
+                        {{end}}
+                    </div>
                     {{end}}
-                </select>
-                {{ range $lang, $data := .Sets }}
-                <div id="{{$lang}}" class="lang_sets" style="display: none">
-                    {{ range $index, $element := $data }}
-                        <input type="checkbox" name="sets" id="set_{{$lang}}_{{$index}}" value="{{$index}}" onclick="onCheckBoxChange()">
-                        <label for="set_{{$lang}}_{{$index}}">{{$element.Name}}</label>
-                        <br>
-                    {{end}}
-                </div>
                 {{end}}
             </form>
         {{else}}
