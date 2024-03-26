@@ -1,18 +1,3 @@
-function showLang(element)
-{
-    var lang_divs = document.querySelectorAll('div.lang_sets');
-    for (var i = 0; i < lang_divs.length; i++) {
-        lang_divs[i].style.display = "none";
-    }
-    document.querySelector('#' + element.value).style.display = "block";
-}
-
-function onCheckBoxChange()
-{
-    var checked = document.querySelectorAll('input[type=checkbox]:checked').lenght;
-    var min = document.getElementById('min_checked').value;
-    document.getElementById("submit").disabled = checked < min;
-}
 
 window.onload = function () {
     var conn;
@@ -40,15 +25,19 @@ window.onload = function () {
         document.getElementById("submit").style.display = "none";
         if (document.getElementById("czar").checked) {
             // send czar response to players
-            var selectedPlayer = document.querySelectorAll('input[name=players]:checked');
-            if (selectedPlayer.length == 1) {
+            var submissions = document.querySelectorAll('input[name=players]');
+            var winner = document.querySelectorAll('input[name=players]:checked');
+            if (winner.length == 1) {
                 // only one winner
                 let msg = {};
-                msg.kind = "winner"
-                // no need for fancy stuff: we already have everything we need
-                msg.payload = selectedPlayer[0].payload
+                msg.kind = "choice"
+                msg.winner = winner[0].payload.player_id
+                msg.payload = []
+                for (var i = 0; i < submissions.length; i++) {
+                    msg.payload.push(submissions[i].payload)
+                }
                 var data = JSON.stringify(msg)
-                conn.send(data);
+                
                 // now we should notify the server of the winner...
                 fetch('/endround', {
                     method: 'POST',
@@ -59,21 +48,23 @@ window.onload = function () {
                 })
                     .then(response => {
                         console.log('status:', response.status)
+                        conn.send(data); // notify the other players
+                        location.reload()
                     })
                     .then(data => console.log(data) );
             }
             return false;
         } else {
             // send players selected cards as json to the czar
-            var selectedPlayer = document.querySelectorAll('input[name=cards]:checked');
-            if (selectedPlayer.length > 0) {
+            var selectedCard = document.querySelectorAll('input[name=cards]:checked');
+            if (selectedCard.length > 0) {
                 let msg = {};
                 msg.kind = "submission"
                 msg.payload = {}
                 msg.payload.player_id = document.getElementById("player_id").value;
                 msg.payload.cards = {}
-                for (var i = 0; i < selectedPlayer.length; i++) {
-                    index = selectedPlayer[i].value;
+                for (var i = 0; i < selectedCard.length; i++) {
+                    index = selectedCard[i].value;
                     msg.payload.cards[index] = document.getElementById("lbl_" + index).innerText;
                 }
                 conn.send(JSON.stringify(msg));
@@ -112,8 +103,9 @@ window.onload = function () {
                         document.getElementById("white_cards").appendChild(lbl)
                     }
                     break;
-                case 'winner':
-                    // parse czar selections
+                case 'choice':
+                    // TODO parse czar selections
+                    location.reload()
                     break;
                 default:
                     logMessage("ERROR")
