@@ -4,12 +4,15 @@ function showLang(element)
     for (var i = 0; i < lang_divs.length; i++) {
         lang_divs[i].style.display = "none";
     }
-    document.querySelector('#' + element.value).style.display = "block";
+    document.querySelector('div#' + element.value).style.display = "block";
 }
 
 function onCheckBoxChange()
 {
-    var checked = document.querySelectorAll('input[type=checkbox]:checked').lenght;
-    var min = document.getElementById('min_checked').value;
-    document.getElementById("submit").disabled = checked < min;
+    var is_disabled = true
+    var num_checked = document.querySelectorAll('input[name=sets]:checked').length;
+    if (num_checked) {
+        is_disabled = num_checked < 1
+    }
+    document.getElementById("submit").disabled = is_disabled;
 }

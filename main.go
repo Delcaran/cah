@@ -45,7 +45,6 @@ type JsonAnswer struct {
 }
 
 func endRound(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.URL)
 	if r.URL.Path != "/endround" || r.Method != http.MethodPost {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
@@ -80,8 +79,7 @@ func endRound(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveSetup(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.URL)
-	if r.URL.Path != "/" && r.Method == http.MethodGet {
+	if r.URL.Path != "/setup" {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
@@ -116,7 +114,8 @@ func joinGame(w http.ResponseWriter, r *http.Request) {
 		game_status := game.GetGame()
 		current_player := &game_status.Players[len(game_status.Players)-1]
 		log.Printf("%s %d : %s \n", role, current_player.ID, current_player.Name)
-		http.Redirect(w, r, "/play/"+strconv.Itoa(current_player.ID), http.StatusSeeOther)
+		http.Redirect(w, r, "/play/"+strconv.Itoa(current_player.ID), http.StatusOK)
+		return
 	} else {
 		http.Error(w, "Wrong POST parameters", http.StatusInternalServerError)
 		return
@@ -124,7 +123,6 @@ func joinGame(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveGame(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.URL)
 	player_id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		log.Fatal(err)
@@ -143,7 +141,8 @@ func main() {
 	go hub.run()
 	mux := http.NewServeMux()
 	// pages
-	mux.HandleFunc("/", serveSetup)
+	mux.Handle("/", http.RedirectHandler("/setup", http.StatusSeeOther))
+	mux.HandleFunc("/setup", serveSetup)
 	mux.HandleFunc("/play/{id}", serveGame)
 	// commands
 	mux.HandleFunc("/join", joinGame)

@@ -3,10 +3,11 @@
     <head>
         <title>Cards Against Humanity</title>
         <script type="text/javascript" src="/scripts/setup.js"></script>
-        <link rel="stylesheet" href="/style/style.css">
+        <link type="text/css" rel="stylesheet" href="/style/style.css">
     </head>
     <body>
         <form id="setup_form" method="POST" action="/join">
+            <input type="submit" id="submit" value="Create Game" disabled/>
             <input required type="text" id="player_name" name="player_name" size="64" placeholder="Enter your name to play" autofocus />
             <br>
             <!-- set selection -->
@@ -25,7 +26,6 @@
                 {{end}}
             </div>
             {{end}}
-            <input type="submit" id="submit" value="Create Game" disabled/>
         </form>
     </body>
 </html>
