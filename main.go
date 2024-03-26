@@ -6,6 +6,7 @@ package main
 
 import (
 	"embed"
+	"encoding/json"
 	"flag"
 	"log"
 	"net/http"
@@ -29,6 +30,33 @@ type PageContent struct {
 	CurrentPlayer    *game.Player
 	CurrentBlackCard *db.BlackCard
 	Sets             map[string]*[]db.Set
+}
+
+type JsonAnswerPayload struct {
+	Player_id string // can't make this uint without decoding errors....
+	Cards     map[uint]string
+}
+type JsonAnswer struct {
+	Kind    string
+	Payload JsonAnswerPayload
+}
+
+func endRound(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.URL)
+	if r.URL.Path != "/endround" || r.Method != http.MethodPost {
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+	var json_answer JsonAnswer
+	if err := json.NewDecoder(r.Body).Decode(&json_answer); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 Internal Server Error"))
+		return
+	}
+	// we now have our winner, let's update the game status
+	//game_status := game.GetGame()
+	//pc := PageContent{}
+	w.WriteHeader(http.StatusOK)
 }
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
@@ -77,6 +105,7 @@ func main() {
 	hub := newHub()
 	go hub.run()
 	http.HandleFunc("/", serveHome)
+	http.HandleFunc("/endround", endRound)
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})

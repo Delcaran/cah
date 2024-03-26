@@ -36,6 +36,8 @@ window.onload = function () {
         if (!conn) {
             return false;
         }
+        // hide submit button (will be replaced with a reload button)
+        document.getElementById("submit").style.display = "none";
         if (document.getElementById("czar").checked) {
             // send czar response to players
             var selectedPlayer = document.querySelectorAll('input[name=players]:checked');
@@ -43,14 +45,25 @@ window.onload = function () {
                 // only one winner
                 let msg = {};
                 msg.kind = "winner"
+                // no need for fancy stuff: we already have everything we need
                 msg.payload = selectedPlayer[0].payload
-                // message is already stored in value
-                conn.send(JSON.stringify(msg));
+                var data = JSON.stringify(msg)
+                conn.send(data);
+                // now we should notify the server of the winner...
+                fetch('/endround', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json; charset=utf-8'
+                    },
+                    body: data
+                })
+                    .then(response => {
+                        console.log('status:', response.status)
+                    })
+                    .then(data => console.log(data) );
             }
             return false;
         } else {
-            // hide submit button (will be replaced with another button when Czar decision is received)
-            document.getElementById("submit").style.display = "none";
             // send players selected cards as json to the czar
             var selectedPlayer = document.querySelectorAll('input[name=cards]:checked');
             if (selectedPlayer.length > 0) {
