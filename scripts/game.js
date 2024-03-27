@@ -39,7 +39,7 @@ window.onload = function () {
                 var data = JSON.stringify(msg)
                 
                 // now we should notify the server of the winner...
-                fetch('/endround', {
+                fetch('/endround/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json; charset=utf-8'
@@ -49,7 +49,7 @@ window.onload = function () {
                     .then(response => {
                         console.log('status:', response.status)
                         conn.send(data); // notify the other players
-                        location.reload()
+                        location.reload() // this reloads czar page
                     })
                     .then(data => console.log(data) );
             }
@@ -81,34 +81,41 @@ window.onload = function () {
         };
 
         conn.onmessage = function (evt) {
+            // even the submitting player receives this message
+            czar = document.getElementById("czar").checked;
             logMessage(evt.data)
-            const obj = JSON.parse(evt.data);     
+            const obj = JSON.parse(evt.data);
             switch(obj.kind) {
                 case 'submission':
-                    // parse players selections
-                    var chk = document.createElement("input");
-                    chk.required = true;
-                    chk.type = "radio";
-                    chk.name = "players";
-                    chk.id = "player_" + obj.payload.player_id;
-                    chk.value = obj.payload.player_id;
-                    chk.payload = obj.payload; // (ab)use custom DOM property
-                    document.getElementById("white_cards").appendChild(chk)
-                    for (let card_index in obj.payload.cards) {
-                        var lbl = document.createElement("label")
-                        lbl.id = "lbl_" + obj.payload.player_id + "_" + card_index
-                        lbl.name = "lbl_"+ obj.payload.player_id
-                        lbl.htmlFor = chk.id
-                        lbl.innerText = obj.payload.cards[card_index]
-                        document.getElementById("white_cards").appendChild(lbl)
+                    if(czar) {
+                        // parse players selections
+                        var chk = document.createElement("input");
+                        chk.required = true;
+                        chk.type = "radio";
+                        chk.name = "players";
+                        chk.id = "player_" + obj.payload.player_id;
+                        chk.value = obj.payload.player_id;
+                        chk.payload = obj.payload; // (ab)use custom DOM property
+                        document.getElementById("white_cards").appendChild(chk)
+                        for (let card_index in obj.payload.cards) {
+                            var lbl = document.createElement("label")
+                            lbl.id = "lbl_" + obj.payload.player_id + "_" + card_index
+                            lbl.name = "lbl_"+ obj.payload.player_id
+                            lbl.htmlFor = chk.id
+                            lbl.innerText = obj.payload.cards[card_index]
+                            document.getElementById("white_cards").appendChild(lbl)
+                        }
                     }
                     break;
                 case 'choice':
-                    // TODO parse czar selections
-                    location.reload()
+                    if(!czar) {
+                        // TODO parse czar selections
+                        location.reload()
+                    }
                     break;
                 default:
                     logMessage("ERROR")
+                    break
             }      
         };
 

@@ -7,24 +7,32 @@
     </head>
     <body>
         <form id="setup_form" method=POST action="/join/">
-            <input type="submit" id="submit" value="Create Game" disabled/>
             <input required type="text" id="player_name" name="player_name" size="64" placeholder="Enter your name to play" autofocus />
-            <br>
-            <!-- set selection -->
-            <select required name="lang" id="lang" onchange="showLang(this)">
-                <option value="">---</option>
+            <input type="submit" id="submit" 
+                {{ if not .CurrentBlackCard }}
+                    value="Create Game" disabled
+                {{else}}
+                    value="Join Game"
+                {{end}}
+            />
+            {{ if not .CurrentBlackCard }}
+                <br>
+                <!-- set selection -->
+                <select required name="lang" id="lang" onchange="showLang(this)">
+                    <option value="">---</option>
+                    {{ range $lang, $data := .Sets }}
+                        <option value="{{$lang}}">{{$lang}}</option>
+                    {{end}}
+                </select>
                 {{ range $lang, $data := .Sets }}
-                    <option value="{{$lang}}">{{$lang}}</option>
+                <div id="{{$lang}}" class="lang_sets" style="display: none">
+                    {{ range $index, $element := $data }}
+                        <input type="checkbox" name="sets" id="set_{{$lang}}_{{$index}}" value="{{$index}}" onclick="onCheckBoxChange()">
+                        <label for="set_{{$lang}}_{{$index}}">{{$element.Name}}</label>
+                        <br>
+                    {{end}}
+                </div>
                 {{end}}
-            </select>
-            {{ range $lang, $data := .Sets }}
-            <div id="{{$lang}}" class="lang_sets" style="display: none">
-                {{ range $index, $element := $data }}
-                    <input type="checkbox" name="sets" id="set_{{$lang}}_{{$index}}" value="{{$index}}" onclick="onCheckBoxChange()">
-                    <label for="set_{{$lang}}_{{$index}}">{{$element.Name}}</label>
-                    <br>
-                {{end}}
-            </div>
             {{end}}
         </form>
     </body>

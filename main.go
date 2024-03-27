@@ -79,9 +79,14 @@ func serveSetup(w http.ResponseWriter, r *http.Request) {
 	pc.CurrentBlackCard = nil
 	pc.CurrentPlayer = nil
 	pc.Sets = make(map[string]*[]db.Set)
-	dbs := game.Load()
-	for lang, db := range *dbs {
-		pc.Sets[lang] = &db.Sets
+	game_status := game.GetGame()
+	if len(game_status.Players) == 0 {
+		dbs := game.Load()
+		for lang, db := range *dbs {
+			pc.Sets[lang] = &db.Sets
+		}
+	} else {
+		pc.CurrentBlackCard = game_status.Black_Card
 	}
 	templates.ExecuteTemplate(w, "setup.html", pc)
 }

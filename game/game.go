@@ -71,13 +71,15 @@ func GetGame() *Status {
 }
 
 func EndRound(data RoundData) {
-	for player_id, player_cards := range data.Submissions {
+	for player_id := range game_status.Players {
 		game_status.Players[player_id].Czar = false
-		for card_id := range player_cards {
+	}
+	for player_id, player_cards := range data.Submissions {
+		for _, card_id := range player_cards {
 			game_status.Players[player_id].Cards[card_id] = db.GetWhiteCard()
 		}
 	}
+	game_status.Black_Card = db.GetBlackCard()
 	game_status.Players[data.Winner].Score += 1
 	game_status.Players[data.Winner].Czar = true
-	game_status.Black_Card = db.GetBlackCard()
 }
