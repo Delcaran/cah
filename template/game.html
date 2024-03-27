@@ -6,14 +6,13 @@
         <link rel="stylesheet" href="/styles/style.css">
     </head>
     <body>
-        <div id=log></div>
-
         {{$player_id := .CurrentPlayer.ID}}
         <input hidden type="number" id="player_id" name="player_id" value="{{$player_id}}" />
         <input hidden type="checkbox" id="czar" name="czar" value="1" {{if .CurrentPlayer.Czar }}checked{{end}}/>
         <div>
             {{if .CurrentPlayer.Czar }}CZAR {{end}}{{.CurrentPlayer.Name}}
         </div>
+        <div id=log></div>
         <div id="black_card">{{.CurrentBlackCard.Text}}</div>
         <form id="form">
             <input hidden id="checked" type="number" /> <!-- TODO: work with black cards with more selections -->
@@ -30,6 +29,7 @@
                         <br>
                     {{end}}
                     <input type="submit" id="submit" value="Select cards to play" /><!-- TODO: work with black cards with more selections -->
+                    <button hidden id="next" type="button" onclick="location.reload()">Next round</button>
                 </div>
             {{end}}
         </form>

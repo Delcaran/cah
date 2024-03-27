@@ -55,7 +55,7 @@ window.onload = function () {
             }
             return false;
         } else {
-            // send players selected cards as json to the czar
+            // send player's selected cards as json to the czar
             var selectedCard = document.querySelectorAll('input[name=cards]:checked');
             if (selectedCard.length > 0) {
                 let msg = {};
@@ -83,7 +83,7 @@ window.onload = function () {
         conn.onmessage = function (evt) {
             // even the submitting player receives this message
             czar = document.getElementById("czar").checked;
-            logMessage(evt.data)
+            
             const obj = JSON.parse(evt.data);
             switch(obj.kind) {
                 case 'submission':
@@ -109,8 +109,20 @@ window.onload = function () {
                     break;
                 case 'choice':
                     if(!czar) {
-                        // TODO parse czar selections
-                        location.reload()
+                        //logMessage(evt.data)
+                        // parse czar selections: print winner
+                        winner = obj.winner
+                        msg = "Winner: " // TODO: handle more winning messages
+                        for (var i = 0; i < obj.payload.length; i++) {
+                            if(obj.payload[i].player_id == winner) {
+                                for (let card_index in obj.payload[i].cards) {
+                                    msg += "\n"
+                                    msg += obj.payload[i].cards[card_index]
+                                }
+                            }
+                        }
+                        logMessage(msg)
+                        document.getElementById("next").removeAttribute("hidden")
                     }
                     break;
                 default:
