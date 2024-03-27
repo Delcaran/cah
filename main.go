@@ -45,10 +45,6 @@ type JsonAnswer struct {
 }
 
 func endRound(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/endround" || r.Method != http.MethodPost {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return
-	}
 	var json_answer JsonAnswer
 	if err := json.NewDecoder(r.Body).Decode(&json_answer); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -79,10 +75,6 @@ func endRound(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveSetup(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/setup" {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return
-	}
 	pc := PageContent{}
 	pc.CurrentBlackCard = nil
 	pc.CurrentPlayer = nil
@@ -95,10 +87,6 @@ func serveSetup(w http.ResponseWriter, r *http.Request) {
 }
 
 func joinGame(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/join" && r.Method == http.MethodPost {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return
-	}
 	r.ParseForm()
 	if r.PostForm.Has("player_name") {
 		var role string
@@ -114,7 +102,7 @@ func joinGame(w http.ResponseWriter, r *http.Request) {
 		game_status := game.GetGame()
 		current_player := &game_status.Players[len(game_status.Players)-1]
 		log.Printf("%s %d : %s \n", role, current_player.ID, current_player.Name)
-		http.Redirect(w, r, "/play/"+strconv.Itoa(current_player.ID), http.StatusOK)
+		http.Redirect(w, r, "/play/"+strconv.Itoa(current_player.ID)+"/", http.StatusSeeOther)
 		return
 	} else {
 		http.Error(w, "Wrong POST parameters", http.StatusInternalServerError)
@@ -141,12 +129,12 @@ func main() {
 	go hub.run()
 	mux := http.NewServeMux()
 	// pages
-	mux.Handle("/", http.RedirectHandler("/setup", http.StatusSeeOther))
-	mux.HandleFunc("/setup", serveSetup)
-	mux.HandleFunc("/play/{id}", serveGame)
+	mux.HandleFunc("GET /{$}", serveSetup)
+	mux.HandleFunc("GET /setup/", serveSetup)
+	mux.HandleFunc("GET /play/{id}/", serveGame)
 	// commands
-	mux.HandleFunc("/join", joinGame)
-	mux.HandleFunc("/endround", endRound)
+	mux.HandleFunc("POST /join/", joinGame)
+	mux.HandleFunc("POST /endround/", endRound)
 	// tools
 	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
