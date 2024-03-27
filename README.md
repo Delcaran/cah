@@ -9,3 +9,13 @@ This is a web-server that allows LAN play.
 First JSON Italian database taken from [JSON Against Humanity ITA](https://github.com/TakFog/json-against-humanity-ita).
 
 English JSON database from [JSON Against Humanity](https://github.com/crhallberg/json-against-humanity).
+
+## Roadmap
+
+- [x] basic game
+- [] support for "pick 2" cards
+- [] Italian translation
+- [] mobile UI
+- [] (maybe) dynamic language selection
+- [] (maybe) aesthetically pleasing UI
+- [] (maybe) gameplay variants
