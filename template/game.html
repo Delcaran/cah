@@ -19,7 +19,7 @@
             <input hidden id="min_checked" type="number" value="1" /> <!-- TODO: work with black cards with more selections -->
             {{if .CurrentPlayer.Czar}}
                 <div id="white_cards"></div>
-                <input type="submit" id="submit" value="Select winning card" /> <!-- TODO: work with black cards with more selections -->
+                <input disabled type="submit" id="submit" value="Select winning card" /> <!-- TODO: work with black cards with more selections -->
             {{else}}
                 <div id="white_cards">
                     {{range $index, $card := .CurrentPlayer.Cards}}

@@ -128,6 +128,17 @@ func serveGame(w http.ResponseWriter, r *http.Request) {
 	templates.ExecuteTemplate(w, "game.html", pc)
 }
 
+func getPlayers(w http.ResponseWriter, r *http.Request) {
+	game_status := game.GetGame()
+	jData, err := json.Marshal(game_status.Players)
+	if err != nil {
+		log.Fatal(err)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(jData)
+}
+
 func main() {
 	flag.Parse()
 	hub := newHub()
@@ -137,6 +148,7 @@ func main() {
 	mux.HandleFunc("GET /{$}", serveSetup)
 	mux.HandleFunc("GET /setup/", serveSetup)
 	mux.HandleFunc("GET /play/{id}/", serveGame)
+	mux.HandleFunc("GET /players/", getPlayers)
 	// commands
 	mux.HandleFunc("POST /join/", joinGame)
 	mux.HandleFunc("POST /endround/", endRound)

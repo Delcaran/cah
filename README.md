@@ -13,6 +13,8 @@ English JSON database from [JSON Against Humanity](https://github.com/crhallberg
 ## Roadmap
 
 - [x] basic game
+- [X] wait for all players' submissions
+- [] skip turn
 - [] support for "pick 2" cards
 - [] Italian translation
 - [] mobile UI

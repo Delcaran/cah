@@ -105,6 +105,14 @@ window.onload = function () {
                             lbl.innerText = obj.payload.cards[card_index]
                             document.getElementById("white_cards").appendChild(lbl)
                         }
+                        // get number of players
+                        fetch('/players/') // default GET
+                            .then((response) => response.json()) // response.json() creates a variable and pipes to next then()
+                            .then((json) => { // json is piped from previous then() and can be used here...
+                                console.log(json)
+                                var submissions = document.querySelectorAll('input[name=players]');
+                                document.getElementById("submit").disabled = submissions.length < (json.length - 1);
+                            }); 
                     }
                     break;
                 case 'choice':
