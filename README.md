@@ -14,10 +14,13 @@ English JSON database from [JSON Against Humanity](https://github.com/crhallberg
 
 - [x] basic game
 - [X] wait for all players' submissions
-- [] skip turn
 - [] support for "pick 2" cards
 - [] Italian translation
 - [] mobile UI
 - [] (maybe) dynamic language selection
 - [] (maybe) aesthetically pleasing UI
 - [] (maybe) gameplay variants
+
+## Will not do
+
+- skip turn: in the game as in life "you play the cards you're dealt"
