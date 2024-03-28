@@ -109,7 +109,7 @@ window.onload = function () {
                         fetch('/players/') // default GET
                             .then((response) => response.json()) // response.json() creates a variable and pipes to next then()
                             .then((json) => { // json is piped from previous then() and can be used here...
-                                console.log(json)
+                                //console.log(json)
                                 var submissions = document.querySelectorAll('input[name=players]');
                                 document.getElementById("submit").disabled = submissions.length < (json.length - 1);
                             }); 
